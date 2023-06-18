@@ -9,6 +9,7 @@ import { Note } from '../../components/Note'
 import { FiPlus, FiSearch } from 'react-icons/fi'
 
 import { api } from '../../services/api'
+import { useNavigate } from 'react-router-dom'
 
 
 export function Home() {
@@ -17,7 +18,13 @@ export function Home() {
   const [tagsSelected, setTagsSelected] = useState([]);
   const [notes, setNotes] = useState([]);
 
+  const navigate = useNavigate();
+
   function handleTagSelected(tagName) {
+    if(tagName === 'all') {
+      return setTagsSelected([]);
+    }
+
     const alreadySelected = tagsSelected.includes(tagName);
 
     if(alreadySelected) {
@@ -26,6 +33,10 @@ export function Home() {
     } else {
       setTagsSelected(prevState => [...prevState, tagName]);
     }
+  }
+
+  function handleDetails(id) {
+    navigate(`/details/${id}`);
   }
 
   useEffect(() => {
@@ -38,10 +49,9 @@ export function Home() {
 
   useEffect(() => {
     async function fetchNotes() {
-      const response = api.get(`/notes?title=${search}&tags=${tagsSelected}`);
+      const response = await api.get(`/notes?title=${search}&tags=${tagsSelected}`);
       setNotes(response.data);
     }
-
     fetchNotes();
   }, [tagsSelected, search]);
 
@@ -56,6 +66,7 @@ export function Home() {
         <li>
           <ButtonText
             title="Todos"
+            onClick={() => handleTagSelected("all")}
             isActive={tagsSelected.length === 0}
           />
         </li>
@@ -87,6 +98,7 @@ export function Home() {
               <Note
                 key={String(note.id)}
                 data={note}
+                onClick={() => handleDetails(note.id)}
               />
             ))
           }
